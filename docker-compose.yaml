@@ -1,62 +1,100 @@
 version: '3.8'
 
 services:
-  eureka-server:
-    image: openjdk:17
-    container_name: eureka-server
-    working_dir: /app
+  postgres:
+    container_name: postgres_container
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      PGDATA: /data/postgres
     volumes:
-      - ./eureka-server/target:/app
-    command: ["java", "-jar", "eureka-server-0.0.1-SNAPSHOT.jar"]
+      - postgres:/data/postgres
     ports:
-      - "8761:8761"
+      - "5432:5432"
     networks:
       - clinic-net
-
-  doctor-service:
-    image: openjdk:17
-    container_name: doctor-service
-    working_dir: /app
+    restart: unless-stopped
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
     volumes:
-      - ./doctor-service/target:/app
-    command: ["java", "-jar", "doctor-service-0.0.1-SNAPSHOT.jar"]
+      - pgadmin:/var/lib/pgadmin
     ports:
-      - "8081:8081"
-    depends_on:
-      - eureka-server
+      - "5000:80"
     networks:
       - clinic-net
-
-  patient-service:
-    image: openjdk:17
-    container_name: patient-service
-    working_dir: /app
-    volumes:
-      - ./patient-service/target:/app
-    command: ["java", "-jar", "patient-service-0.0.1-SNAPSHOT.jar"]
-    ports:
-      - "8082:8082"
-    depends_on:
-      - eureka-server
-    networks:
-      - clinic-net
-
-  appointment-service:
-    image: openjdk:17
-    container_name: appointment-service
-    working_dir: /app
-    volumes:
-      - ./appointment-service/target:/app
-    command: ["java", "-jar", "appointment-service-0.0.1-SNAPSHOT.jar"]
-    ports:
-      - "8083:8083"
-    depends_on:
-      - doctor-service
-      - patient-service
-      - eureka-server
-    networks:
-      - clinic-net
+    restart: unless-stopped
+#  eureka-server:
+#    image: openjdk:17
+#    container_name: eureka-server
+#    working_dir: /app
+#    volumes:
+#      - ./eureka-server/target:/app
+#    command: ["java", "-jar", "eureka-server-0.0.1-SNAPSHOT.jar"]
+#    ports:
+#      - "8761:8761"
+#    networks:
+#      - clinic-net
+#
+#  doctor-service:
+#    image: openjdk:17
+#    container_name: doctor-service
+#    working_dir: /app
+#    volumes:
+#      - ./doctor-service/target:/app
+#    command: ["java", "-jar", "doctor-service-0.0.1-SNAPSHOT.jar"]
+#    ports:
+#      - "8081:8081"
+#    depends_on:
+#      - eureka-server
+#      - postgres
+#      - pgadmin
+#    networks:
+#      - clinic-net
+#
+#  patient-service:
+#    image: openjdk:17
+#    container_name: patient-service
+#    working_dir: /app
+#    volumes:
+#      - ./patient-service/target:/app
+#    command: ["java", "-jar", "patient-service-0.0.1-SNAPSHOT.jar"]
+#    ports:
+#      - "8082:8082"
+#    depends_on:
+#      - eureka-server
+#      - postgres
+#      - pgadmin
+#    networks:
+#      - clinic-net
+#
+#  appointment-service:
+#    image: openjdk:17
+#    container_name: appointment-service
+#    working_dir: /app
+#    volumes:
+#      - ./appointment-service/target:/app
+#    command: ["java", "-jar", "appointment-service-0.0.1-SNAPSHOT.jar"]
+#    ports:
+#      - "8083:8083"
+#    depends_on:
+#      - doctor-service
+#      - patient-service
+#      - eureka-server
+#      - postgres
+#      - pgadmin
+#    networks:
+#      - clinic-net
 
 networks:
   clinic-net:
     driver: bridge
+
+volumes:
+  postgres:
+  pgadmin:
