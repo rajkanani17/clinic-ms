@@ -29,6 +29,14 @@ services:
     networks:
       - clinic-net
     restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin
+    container_name: zipkin
+    ports:
+      - 9411:9411
+    networks:
+      - clinic-net
 #  eureka-server:
 #    image: openjdk:17
 #    container_name: eureka-server
