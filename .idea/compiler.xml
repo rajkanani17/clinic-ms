@@ -11,6 +11,7 @@
         <module name="patient-service" />
         <module name="appointment-service" />
         <module name="eureka-server" />
+        <module name="gateway" />
         <module name="doctor-service" />
       </profile>
     </annotationProcessing>
@@ -21,6 +22,7 @@
       <module name="config-server" options="-parameters" />
       <module name="doctor-service" options="-parameters" />
       <module name="eureka-server" options="-parameters" />
+      <module name="gateway" options="-parameters" />
       <module name="patient-service" options="-parameters" />
     </option>
   </component>
