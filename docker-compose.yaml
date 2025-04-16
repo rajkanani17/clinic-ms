@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   postgres:
     container_name: postgres_container
     image: postgres
@@ -15,6 +16,7 @@ services:
     networks:
       - clinic-net
     restart: unless-stopped
+
   pgadmin:
     container_name: pgadmin_container
     image: dpage/pgadmin4
@@ -34,7 +36,7 @@ services:
     image: imrds7/config-server-ms:latest
     container_name: config-server-ms
     ports:
-      - 8080:8080
+      - 8090:8090
     depends_on:
       - servicereg
     networks:
@@ -84,6 +86,9 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://servicereg:8761/eureka
+    volumes:
+      - ./logs/doctorms:/logs/doctorms
+
 
   patientms:
     image: imrds7/patientms:latest
@@ -110,6 +115,7 @@ services:
 
   gateway-ms:
     image: imrds7/gateway-ms:latest
+    container_name: gateway-ms
     ports:
       - 8084:8084
     depends_on:
@@ -119,67 +125,48 @@ services:
       - clinic-net
     environment:
       - SPRING_PROFILES_ACTIVE=docker
-#  eureka-server:
-#    image: openjdk:17
-#    container_name: eureka-server
-#    working_dir: /app
-#    volumes:
-#      - ./eureka-server/target:/app
-#    command: ["java", "-jar", "eureka-server-0.0.1-SNAPSHOT.jar"]
-#    ports:
-#      - "8761:8761"
-#    networks:
-#      - clinic-net
-#
-#  doctor-service:
-#    image: openjdk:17
-#    container_name: doctor-service
-#    working_dir: /app
-#    volumes:
-#      - ./doctor-service/target:/app
-#    command: ["java", "-jar", "doctor-service-0.0.1-SNAPSHOT.jar"]
-#    ports:
-#      - "8081:8081"
-#    depends_on:
-#      - eureka-server
-#      - postgres
-#      - pgadmin
-#    networks:
-#      - clinic-net
-#
-#  patient-service:
-#    image: openjdk:17
-#    container_name: patient-service
-#    working_dir: /app
-#    volumes:
-#      - ./patient-service/target:/app
-#    command: ["java", "-jar", "patient-service-0.0.1-SNAPSHOT.jar"]
-#    ports:
-#      - "8082:8082"
-#    depends_on:
-#      - eureka-server
-#      - postgres
-#      - pgadmin
-#    networks:
-#      - clinic-net
-#
-#  appointment-service:
-#    image: openjdk:17
-#    container_name: appointment-service
-#    working_dir: /app
-#    volumes:
-#      - ./appointment-service/target:/app
-#    command: ["java", "-jar", "appointment-service-0.0.1-SNAPSHOT.jar"]
-#    ports:
-#      - "8083:8083"
-#    depends_on:
-#      - doctor-service
-#      - patient-service
-#      - eureka-server
-#      - postgres
-#      - pgadmin
-#    networks:
-#      - clinic-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - microservice-network
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:7.17.0
+    container_name: logstash
+    volumes:
+      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline
+      - ./logs:/usr/share/logstash/logs
+    ports:
+      - "5020:5020"
+    depends_on:
+      - elasticsearch
+    networks:
+      - microservice-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.0
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+    networks:
+      - microservice-network
+
+
+
+
 
 networks:
   microservice-network:
@@ -190,3 +177,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  esdata:
