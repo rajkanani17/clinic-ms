@@ -126,47 +126,6 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
 
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.0
-    container_name: elasticsearch
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-    ports:
-      - "9200:9200"
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
-    networks:
-      - microservice-network
-
-  logstash:
-    image: docker.elastic.co/logstash/logstash:7.17.0
-    container_name: logstash
-    volumes:
-      - ./elk/logstash/pipeline:/usr/share/logstash/pipeline
-      - ./logs:/usr/share/logstash/logs
-    ports:
-      - "5020:5020"
-    depends_on:
-      - elasticsearch
-    networks:
-      - microservice-network
-
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.0
-    container_name: kibana
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
-    networks:
-      - microservice-network
-
-
-
-
 
 networks:
   microservice-network:
@@ -177,4 +136,3 @@ networks:
 volumes:
   postgres:
   pgadmin:
-  esdata:
